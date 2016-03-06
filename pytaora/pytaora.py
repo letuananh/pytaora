@@ -137,13 +137,13 @@ class Template:
     def fillin(self):
         print(self.requirements)
         for req in self.requirements:
-            print(req)
+            # print(req)
             if not self.ask(req):
                 return False
         return True
 
     def ask(self, requirement):
-        answer = None
+        answer = self.get(requirement)
         while not answer:
             answer = input("Please fill in %s (Default = %s): " % (requirement.field, requirement.default,))
             if not answer:
@@ -160,10 +160,20 @@ class Template:
 
     def update(self, requirement, answer):
         path = list(reversed(requirement.field.split('.')))
-        level = {}
+        level = self.contents
+        while len(path) > 1:
+            step = path.pop()
+            if step in self.contents:
+                level = self.contents[step]
+        level[path.pop()] = answer
+
+    def get(self, requirement):
+        path = list(reversed(requirement.field.split('.')))
+        level = self.contents
         while len(path) > 1:
             level = self.contents[path.pop()]
-        level[path.pop()] = answer
+        step = path.pop()
+        return level[step] if step in level else None
         
     def confirm(self, msg):
         answer = input(msg)
@@ -179,13 +189,20 @@ class Template:
 
 def dev_mode(outpath=None):
     template = Template('template.py')
-    template.fillin()
-    print(template.contents)
-    if outpath:
-        with open(outpath, 'w') as outfile:
-            outfile.write(template.render())
-            print("Created %s" % (outpath,))
-    
+    if template.fillin():
+        print(template.contents)
+        if outpath:
+            with open(outpath, 'w') as outfile:
+                outfile.write(template.render())
+                print("Created %s" % (outpath,))
+        else:
+            print("\n\n")
+            print(template.render())
+    else:
+        print("Code generation cancelled")
+
+def generate_code(outpath=None):
+    pass
 #-------------------------------------------------------------------------------
 # MAIN
 #-------------------------------------------------------------------------------
@@ -196,9 +213,11 @@ def main():
 
     parser = argparse.ArgumentParser(description="pyTaora - A code generator")
     
+    parser.add_argument('template', help='Name of the code template to use')
+
     # Positional argument(s)
     parser.add_argument('-d', '--dev', help='Run developing feature', action="store_true")
-    parser.add_argument('-i', '--input', help='Template to be used')
+    # parser.add_argument('-i', '--input', help='Template to be used')
     parser.add_argument('-o', '--output', help='Path to output file')
 
     # Optional argument(s)

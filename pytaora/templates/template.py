@@ -3,7 +3,7 @@
 
 '''
 {{desc}}
-Latest version can be found at {{author.github}}{{project.codename}}
+Latest version can be found at {{project.url}}
 
 References:
     Python documentation:
@@ -15,7 +15,7 @@ References:
     PEP 0257 - Python Docstring Conventions:
         https://www.python.org/dev/peps/pep-0257/
 
-@author: Le Tuan Anh <tuananh.ke@gmail.com>
+@author: {{author.name}} <{{author.email}}>
 '''
 
 # Copyright (c) {{now.year}}, {{author.name}} <{{author.email}}>
@@ -79,7 +79,7 @@ def dev_mode():
 #-------------------------------------------------------------------------------
 
 def main():
-    '''Main entry of this demo application.
+    '''Main entry of {{project.codename}}
     '''
 
     # It's easier to create a user-friendly console application by using argparse
