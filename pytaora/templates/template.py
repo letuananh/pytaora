@@ -3,7 +3,7 @@
 
 '''
 {{desc}}
-Latest version can be found at {{project.url}}
+Latest version can be found at {% if project.url %}{{project.url}}{% elif author.github %}{{author.github}}{{project.codename}}{% endif %}
 
 References:
     Python documentation:
@@ -59,7 +59,7 @@ from collections import namedtuple
 # CONFIGURATION
 #-------------------------------------------------------------------------------
 
-DATA_FOLDER = os.path.abspath(os.path.extend_user('./data'))
+DATA_FOLDER = os.path.abspath(os.path.expanduser('./data'))
 
 #-------------------------------------------------------------------------------
 # DATA STRUCTURES
@@ -87,7 +87,7 @@ def main():
     parser = argparse.ArgumentParser(description="{{desc}}")
     
     # Positional argument(s)
-    parser.add_argument('-d', '--dev', help='Quick method for developer.')
+    parser.add_argument('-d', '--dev', help='Quick method for developer.', action='store_true')
 
     # Optional argument(s)
     group = parser.add_mutually_exclusive_group()

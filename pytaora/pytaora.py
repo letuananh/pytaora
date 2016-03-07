@@ -121,8 +121,9 @@ class Template:
     def __init__(self, template_file):
         # Jinja template loader
         self.templateLoader = jinja2.FileSystemLoader( searchpath=TEMPLATE_FOLDER )
-        self.templateEnv = jinja2.Environment( loader=self.templateLoader )
-        self.template = self.templateEnv.get_template(template_file)
+        self.templateEnv    = jinja2.Environment( loader=self.templateLoader )
+        self.template       = self.templateEnv.get_template(template_file)
+        self.ext            = os.path.splitext(template_file)[1]
 
         # Template requirements
         self.requirements = RequirementReader.parse_file(os.path.join(TEMPLATE_FOLDER, template_file + '.config'))
@@ -168,7 +169,8 @@ class Template:
         level[path.pop()] = answer
 
     def get(self, requirement):
-        path = list(reversed(requirement.field.split('.')))
+        field = requirement if isinstance(requirement,str) else requirement.field
+        path = list(reversed(field.split('.')))
         level = self.contents
         while len(path) > 1:
             level = self.contents[path.pop()]
@@ -181,6 +183,16 @@ class Template:
 
     def render(self):
         return self.template.render(self.contents)
+    
+    def save(self, filename):
+        filename = os.path.abspath(filename)
+        if os.path.isfile(filename):
+            if not self.confirm("File %s exists, do you want to overwrite (Y/N): " % (filename,)):
+                print("Cancelled")
+                return False
+        with open(filename, 'w') as outfile:
+            outfile.write(self.render())
+            print("Code has been generated to %s" % (filename,))
 
 
 #-------------------------------------------------------------------------------
@@ -191,10 +203,12 @@ def dev_mode(outpath=None):
     template = Template('template.py')
     if template.fillin():
         print(template.contents)
+        codename = template.get('project.codename')
+        if not outpath and codename:
+            outpath = codename + template.ext
+        
         if outpath:
-            with open(outpath, 'w') as outfile:
-                outfile.write(template.render())
-                print("Created %s" % (outpath,))
+            template.save(outpath)
         else:
             print("\n\n")
             print(template.render())
