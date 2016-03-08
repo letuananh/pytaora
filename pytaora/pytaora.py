@@ -51,6 +51,7 @@ __status__ = "Prototype"
 
 import os
 import sys
+import logging
 import jinja2
 import datetime
 from collections import defaultdict, namedtuple
@@ -71,34 +72,48 @@ TAORA_CFG_FILE  = os.path.abspath(os.path.expanduser('~/.taora'))
 
 Requirement = namedtuple('Requirement', ['field', 'compulsory', 'default'])
 
-class RequirementReader:
-    def __init__(self):
+class TemplateConfig:
+    ''' Code Template Configuration Reader
+    Do not create instances by using the constructor. Instead TemplateConfig.parse('{ "key" : "value" }') or TemplateConfig.parse_file('~/path/to/file.config') should be used.
+    '''
+
+    def __init__(self, requirements=None):
+        if requirements is not None:
+            self.requirements = list(requirements)
+        else:
+            self.requirements = []
         pass
 
+    def __len__(self):
+        return len(self.requirements)
+
+    def __getitem__(self, idx):
+        return self.requirements[idx]
+
+    def __iter__(self):
+        for req in self.requirements:
+            yield req
+
     @staticmethod
-    def parse(lines):
+    def parse(raw_text):
+        cfg = json.loads(raw_text)
         requirements = []
-        for line in lines:
-            if line.strip().startswith("#") or len(line.strip()) == 0:
-                continue
-            else:
-                parts = line.split("\t")
-                if len(parts) == 1:
-                    field, compulsory, default = parts[0], '', ''
-                elif len(parts) == 2:
-                    field, compulsory, default = parts[0], parts[1], ''
-                else:
-                    field, compulsory, default = line.split('\t')
-            compulsory = (compulsory.strip().upper() in ['T', 'Y', 'TRUE', 'YES'])
-            requirements.append(Requirement(field.strip(), compulsory, default.strip()))
-        return requirements
+        if 'fields' in cfg:
+            for field in cfg['fields']:
+                name = field['name']
+                compulsory = 'required' in field and (field['required'].strip().upper() in ['T', 'Y', 'TRUE', 'YES'])
+                default = "" if "default" not in field else field['default']
+                requirements.append(Requirement(name, compulsory, default))
+        return TemplateConfig(requirements)
 
     @staticmethod
     def parse_file(file_name):
         with open(file_name, 'r') as infile:
-            return RequirementReader.parse(infile.readlines())
+            return TemplateConfig.parse(infile.read())
 
 class GlobalConfig:
+    ''' pyTaoRa Configuration reader. Configuration file will be read from [~/taora]. If the file cannot be found, the next place will be [./taora]
+    '''
     def __init__(self):
         if os.path.isfile(TAORA_CFG_FILE):
             self.load(TAORA_CFG_FILE)
@@ -118,33 +133,38 @@ class GlobalConfig:
     
 class Template:
 
-    def __init__(self, template_file):
+    def __init__(self, template_file, verbose=False):
         # Jinja template loader
         self.templateLoader = jinja2.FileSystemLoader( searchpath=TEMPLATE_FOLDER )
         self.templateEnv    = jinja2.Environment( loader=self.templateLoader )
         self.template       = self.templateEnv.get_template(template_file)
         self.ext            = os.path.splitext(template_file)[1]
-
+        self.verbose        = verbose
         # Template requirements
-        self.requirements = RequirementReader.parse_file(os.path.join(TEMPLATE_FOLDER, template_file + '.config'))
+        self.requirements = TemplateConfig.parse_file(os.path.join(TEMPLATE_FOLDER, template_file + '.config'))
         self.contents = defaultdict(dict)
         self.contents.update({ 'now' : datetime.datetime.now() })
 
         # Prefill stuff from Global config
         prefilled = GlobalConfig.read()
+        logging.info("----------")
         if prefilled:
+            logging.info("Prefilled value(s) from .taora file: %s" % json.dumps(prefilled))
             self.contents.update(prefilled)
+        logging.info("----------")
     
     def fillin(self):
-        print(self.requirements)
         for req in self.requirements:
-            # print(req)
+            current_value = self[req]
+            if current_value is not None and current_value.strip() != '':
+                logging.debug(req)
+                continue
             if not self.ask(req):
                 return False
         return True
 
     def ask(self, requirement):
-        answer = self.get(requirement)
+        answer = None
         while not answer:
             answer = input("Please fill in %s (Default = %s): " % (requirement.field, requirement.default,))
             if not answer:
@@ -153,29 +173,37 @@ class Template:
                         return False
                 else:
                     if self.confirm("No input detected, do you want to use default value (%s)? (Y/N) " % (requirement.default)):
-                        self.update(requirement, answer)
+                        self[requirement] = answer
                         return True
             else:
-                self.update(requirement, answer)
+                self[requirement] = answer
         return True
 
-    def update(self, requirement, answer):
-        path = list(reversed(requirement.field.split('.')))
+    def __getitem__(self, requirement):
+        field = requirement if isinstance(requirement,str) else requirement.field
+        path = list(reversed(field.split('.')))
+        logging.debug("path: %s" % (path,))
         level = self.contents
         while len(path) > 1:
             step = path.pop()
-            if step in self.contents:
-                level = self.contents[step]
-        level[path.pop()] = answer
+            logging.debug("current step: %s from %s " % (step, level))
+            level = self.contents[step]
+            logging.debug("current level: %s" % (level,))
+        step = path.pop()
+        # logging.debug(step)
+        value = level[step] if step in level else None
+        logging.debug("Get value: %s => %s" % (requirement, value))
+        return value
 
-    def get(self, requirement):
-        field = requirement if isinstance(requirement,str) else requirement.field
+    def __setitem__(self, key, value):
+        logging.debug("setting [%s] = %s" % (key, value))
+        field = key if isinstance(key, str) else key.field
         path = list(reversed(field.split('.')))
         level = self.contents
         while len(path) > 1:
-            level = self.contents[path.pop()]
-        step = path.pop()
-        return level[step] if step in level else None
+            step = path.pop()
+            level = self.contents[step]
+        level[path.pop()] = value
         
     def confirm(self, msg):
         answer = input(msg)
@@ -199,11 +227,24 @@ class Template:
 # FUNCTIONS
 #-------------------------------------------------------------------------------
 
-def dev_mode(outpath=None):
-    template = Template('template.py')
+def dev_mode(outpath=None,terms=None):
+    print("Working ...")
+    pass
+
+def gen_code(outpath=None, terms=None, verbose=False):
+    template = Template('template.py', verbose=verbose)
+    if terms:
+        for term in terms:
+            parts = term.partition('=')
+            if parts[1] != '=':
+                print("Invalid term (%s)" % (term,))
+                exit()
+            else:
+                template[parts[0].strip()] = parts[2].strip()
+                logging.debug("Template values before template.fillin(): %s" % (template.contents,))
     if template.fillin():
-        print(template.contents)
-        codename = template.get('project.codename')
+        # print(template.contents)
+        codename = template['project.codename']
         if not outpath and codename:
             outpath = codename + template.ext
         
@@ -215,8 +256,6 @@ def dev_mode(outpath=None):
     else:
         print("Code generation cancelled")
 
-def generate_code(outpath=None):
-    pass
 #-------------------------------------------------------------------------------
 # MAIN
 #-------------------------------------------------------------------------------
@@ -231,14 +270,15 @@ def main():
 
     # Positional argument(s)
     parser.add_argument('-d', '--dev', help='Run developing feature', action="store_true")
+    
     # parser.add_argument('-i', '--input', help='Template to be used')
     parser.add_argument('-o', '--output', help='Path to output file')
-
+    parser.add_argument('-t', '--terms', nargs = '*', dest = 'terms', help = 'Config')
     # Optional argument(s)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--verbose", action="store_true")
     group.add_argument("-q", "--quiet", action="store_true")
-
+    group.add_argument('--debug', help='Activate debug mode', action="store_true")
     # Main script
     if len(sys.argv) == 1:
         # User didn't pass any value in, show help
@@ -246,9 +286,21 @@ def main():
     else:
         # Parse input arguments
         args = parser.parse_args()
+        if args.debug:
+            logging.basicConfig(level=logging.DEBUG)
+        elif args.verbose:
+            logging.basicConfig(level=logging.INFO)
+        elif args.quiet:
+            logging.disabled = True
+        else:
+            logging.basicConfig(level=logging.CRITICAL)
+
+
         # Now do something ...
         if args.dev:
-            dev_mode(args.output)
+            dev_mode(args.output, terms=args.terms)
+        else:
+            gen_code(args.output, terms=args.terms, verbose=args.verbose)
     pass
 
 if __name__ == "__main__":
