@@ -1,0 +1,12 @@
+{
+	"name"     : "spy"
+	,"template": "setup.py" 
+	,"ext"     : "py"
+	,"fields"  : [
+		 { "name" : "desc"            , "required" : "yes" }
+	       ,{ "name" : "author.name"     , "required" : "yes" }
+	       ,{ "name" : "author.email"    , "required" : "yes" }
+	       ,{ "name" : "project.url"     , "required" : "no"  }
+	       ,{ "name" : "project.codename", "required" : "yes" }
+	]
+}
