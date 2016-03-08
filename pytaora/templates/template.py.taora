@@ -1,7 +1,8 @@
 {
-	"name"    : "py3" 
-	,"ext"    : "py"
-	,"fields" : [
+	"name"     : "py3"
+	,"template": "template.py" 
+	,"ext"     : "py"
+	,"fields"  : [
 		 { "name" : "desc"            , "required" : "yes" }
 	       ,{ "name" : "author.name"     , "required" : "yes" }
 	       ,{ "name" : "author.email"    , "required" : "yes" }

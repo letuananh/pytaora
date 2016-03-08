@@ -77,12 +77,23 @@ class TemplateConfig:
     Do not create instances by using the constructor. Instead TemplateConfig.parse('{ "key" : "value" }') or TemplateConfig.parse_file('~/path/to/file.config') should be used.
     '''
 
-    def __init__(self, requirements=None):
-        if requirements is not None:
-            self.requirements = list(requirements)
+    def __init__(self, cfg):
+        # Read requirements
+        self.requirements = []
+        if 'fields' in cfg:
+            for field in cfg['fields']:
+                name = field['name']
+                compulsory = 'required' in field and (field['required'].strip().upper() in ['T', 'Y', 'TRUE', 'YES'])
+                default = "" if "default" not in field else field['default']
+                self.requirements.append(Requirement(name, compulsory, default))
+
+        # Template file
+        if 'template' not in cfg or 'ext' not in cfg:
+            raise Exception('Invalid template config file (Template file or extension not found)')
         else:
-            self.requirements = []
-        pass
+            self.template = cfg['template']
+            self.ext      = cfg['ext']
+            self.name     = cfg['name']
 
     def __len__(self):
         return len(self.requirements)
@@ -97,14 +108,7 @@ class TemplateConfig:
     @staticmethod
     def parse(raw_text):
         cfg = json.loads(raw_text)
-        requirements = []
-        if 'fields' in cfg:
-            for field in cfg['fields']:
-                name = field['name']
-                compulsory = 'required' in field and (field['required'].strip().upper() in ['T', 'Y', 'TRUE', 'YES'])
-                default = "" if "default" not in field else field['default']
-                requirements.append(Requirement(name, compulsory, default))
-        return TemplateConfig(requirements)
+        return TemplateConfig(cfg)
 
     @staticmethod
     def parse_file(file_name):
@@ -130,18 +134,18 @@ class GlobalConfig:
     @staticmethod
     def read():
         return GlobalConfig().contents
-    
+
+
 class Template:
 
-    def __init__(self, template_file, verbose=False):
+    def __init__(self, template_config_file):
+        # Read template config
+        self.config = TemplateConfig.parse_file(os.path.join(TEMPLATE_FOLDER, template_config_file))
         # Jinja template loader
         self.templateLoader = jinja2.FileSystemLoader( searchpath=TEMPLATE_FOLDER )
         self.templateEnv    = jinja2.Environment( loader=self.templateLoader )
-        self.template       = self.templateEnv.get_template(template_file)
-        self.ext            = os.path.splitext(template_file)[1]
-        self.verbose        = verbose
-        # Template requirements
-        self.requirements = TemplateConfig.parse_file(os.path.join(TEMPLATE_FOLDER, template_file + '.config'))
+        self.template       = self.templateEnv.get_template(self.config.template)
+        self.ext            = self.config.ext
         self.contents = defaultdict(dict)
         self.contents.update({ 'now' : datetime.datetime.now() })
 
@@ -154,7 +158,7 @@ class Template:
         logging.info("----------")
     
     def fillin(self):
-        for req in self.requirements:
+        for req in self.config.requirements:
             current_value = self[req]
             if current_value is not None and current_value.strip() != '':
                 logging.debug(req)
@@ -172,7 +176,7 @@ class Template:
                     if not self.confirm("This field is compulsory, do you want to continue? (Y/N) "):
                         return False
                 else:
-                    if self.confirm("No input detected, do you want to use default value (%s)? (Y/N) " % (requirement.default)):
+                    if self.confirm("No input detected, do you want to use default value (%s)? (Y/N) " % (requirement.default), default_yes=True):
                         self[requirement] = answer
                         return True
             else:
@@ -205,9 +209,9 @@ class Template:
             level = self.contents[step]
         level[path.pop()] = value
         
-    def confirm(self, msg):
+    def confirm(self, msg, default_yes=False):
         answer = input(msg)
-        return answer.lower() in [ 'y', 'yes' ]
+        return answer.lower() in [ 'y', 'yes' ] or (default_yes and answer == '')
 
     def render(self):
         return self.template.render(self.contents)
@@ -231,8 +235,27 @@ def dev_mode(outpath=None,terms=None):
     print("Working ...")
     pass
 
-def gen_code(outpath=None, terms=None, verbose=False):
-    template = Template('template.py', verbose=verbose)
+template_cache = None
+
+def search_template(template_name):
+    global template_cache
+    if not template_cache:
+        template_cache = {}
+        # load all templates
+        for filename in os.listdir(TEMPLATE_FOLDER):
+            if filename.endswith('.taora'):
+                template_obj = Template(filename)
+                template_cache[template_obj.config.name] = template_obj
+    if template_name in template_cache:
+        return template_cache[template_name]
+    else:
+        return None
+        
+def gen_code(template_name, outpath=None, terms=None):
+    template = search_template(template_name)
+    if not template:
+        print("Template `%s` not found" % (template_name,))
+        return None
     if terms:
         for term in terms:
             parts = term.partition('=')
@@ -246,7 +269,7 @@ def gen_code(outpath=None, terms=None, verbose=False):
         # print(template.contents)
         codename = template['project.codename']
         if not outpath and codename:
-            outpath = codename + template.ext
+            outpath = codename + '.' + template.ext
         
         if outpath:
             template.save(outpath)
@@ -300,7 +323,7 @@ def main():
         if args.dev:
             dev_mode(args.output, terms=args.terms)
         else:
-            gen_code(args.output, terms=args.terms, verbose=args.verbose)
+            gen_code(args.template, args.output, terms=args.terms)
     pass
 
 if __name__ == "__main__":
