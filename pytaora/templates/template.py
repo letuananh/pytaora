@@ -51,6 +51,7 @@ __status__ = "Prototype"
 
 import sys
 import os
+import logging
 import argparse
 from collections import defaultdict as dd
 from collections import namedtuple
@@ -72,7 +73,9 @@ Person = namedtuple('Person', ['name', 'age'])
 #-------------------------------------------------------------------------------
 
 def dev_mode():
-    print("I'm working on this ...")
+    logging.info("I'm working on this ...")
+    logging.debug("A debug message")
+    logging.error("When I see an error ...")
 
 #-------------------------------------------------------------------------------
 # MAIN
@@ -102,6 +105,13 @@ def main():
         # Parse input arguments
         args = parser.parse_args()
         # Now do something ...
+        if args.quiet:
+            logging.basicConfig(level=logging.CRITICAL)
+            logging.disabled = True
+        elif args.verbose:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.INFO)
         if args.dev:
             dev_mode()
         else:
