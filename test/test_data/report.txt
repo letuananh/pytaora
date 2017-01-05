@@ -1,0 +1,7 @@
+.:: {{report_title}} ::.
+--
+Report code: {{report_code}}
+Prepared by: {{author_name}} {% if author_email %}<{{author_email}}>{% endif %}
+Created on : {{now.day}} {{now.month}} {{now.year}}
+------------------------------------------------------------------------
+{% if report_body %}{{report_body}}{% else %}I have nothing to report today{% endif %}

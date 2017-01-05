@@ -2,15 +2,17 @@
 # -*- coding: utf-8 -*-
 
 '''
-Setup script for {{project_codename}}
+Test script for {{project_codename}}
 Latest version can be found at {% if project_url %}{{project_url}}{% elif author_github %}{{author_github}}{{project_codename}}{% endif %}
 
 References:
+    Python unittest documentation:
+        https://docs.python.org/3/library/unittest.html
     Python documentation:
         https://docs.python.org/
     PEP 0008 - Style Guide for Python Code
         https://www.python.org/dev/peps/pep-0008/
-    PEP 257 - Python Docstring Conventions:
+    PEP 0257 - Python Docstring Conventions:
         https://www.python.org/dev/peps/pep-0257/
 
 @author: {{author_name}} <{{author_email}}>
@@ -47,57 +49,29 @@ __credits__ = ["{{author_name}}"]
 
 ########################################################################
 
-from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
-import io
-import codecs
 import os
-import sys
+import unittest
 
-from {{project_codename}} import {{project_codename}}
+#-------------------------------------------------------------------------------
+# CONFIGURATION
+#-------------------------------------------------------------------------------
 
-########################################################################
+TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+
+#-------------------------------------------------------------------------------
+# DATA STRUCTURES
+#-------------------------------------------------------------------------------
 
 
-here = os.path.abspath(os.path.dirname(__file__))
+class TestMainApp(unittest.TestCase):
+    
+    def test_{{project_codename}}(self):
+        self.assertEqual(self, "foo")
 
-def read(*filenames, **kwargs):
-    encoding = kwargs.get('encoding', 'utf-8')
-    sep = kwargs.get('sep', '\n')
-    buf = []
-    for filename in filenames:
-        with io.open(filename, encoding=encoding) as f:
-            buf.append(f.read())
-    return sep.join(buf)
+#-------------------------------------------------------------------------------
+# MAIN
+#-------------------------------------------------------------------------------
 
-long_description = read('README.md', 'CHANGES.md')
 
-setup(
-    name='{{project_codename}}',
-    version={{project_codename}}.__version__,
-    url='{% if project.url %}{{project.url}}{% elif author.github %}{{author.github}}{{project_codename}}{% endif %}',
-    license='MIT License',
-    author='{{author_name}}',
-    tests_require=[],
-    install_requires=[],
-    author_email='{{author_email}}',
-    description='{{desc}}',
-    long_description=long_description,
-    packages=['{{project_codename}}'],
-    include_package_data=True,
-    platforms='any',
-    test_suite='test',
-    classifiers = [
-        'Programming Language :: Python',
-        'Development Status :: 0.1 - Alpha',
-        'Natural Language :: English',
-        'Environment :: Console Application',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        ]#,
-    #extras_require={
-        # 'testing': ['pytest'],
-    #}
-)
+if __name__ == "__main__":
+    unittest.main()

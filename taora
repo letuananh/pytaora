@@ -1,3 +1,4 @@
 #!/usr/bin/sh
 
+export PYTHONPATH=~/pytaora
 python3 -m pytaora.pytaora "$@"

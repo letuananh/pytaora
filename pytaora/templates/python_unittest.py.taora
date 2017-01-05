@@ -1,10 +1,10 @@
 {
-	"name"     : "py3"
-	,"template": "template.py" 
+	"name"     : "put"
+	,"template": "python_unittest.py" 
 	,"ext"     : "py"
+	,"default_name" : "test_{{project.codename}}.py"
 	,"fields"  : [
-		 { "name" : "desc"            , "required" : "yes" }
-	       ,{ "name" : "author_name"     , "required" : "yes" }
+	       { "name" : "author_name"     , "required" : "yes" }
 	       ,{ "name" : "author_email"    , "required" : "yes" }
 	       ,{ "name" : "project_url"     , "required" : "no"  }
 	       ,{ "name" : "project_codename", "required" : "yes" }

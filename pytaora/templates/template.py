@@ -3,22 +3,20 @@
 
 '''
 {{desc}}
-Latest version can be found at {% if project.url %}{{project.url}}{% elif author.github %}{{author.github}}{{project.codename}}{% endif %}
+Latest version can be found at {% if project_url %}{{project_url}}{% elif author_github %}{{author_github}}{{project_codename}}{% endif %}
 
 References:
     Python documentation:
         https://docs.python.org/
-    argparse module:
-        https://docs.python.org/3/howto/argparse.html
     PEP 0008 - Style Guide for Python Code
         https://www.python.org/dev/peps/pep-0008/
-    PEP 0257 - Python Docstring Conventions:
+    PEP 257 - Python Docstring Conventions:
         https://www.python.org/dev/peps/pep-0257/
 
-@author: {{author.name}} <{{author.email}}>
+@author: {{author_name}} <{{author_email}}>
 '''
 
-# Copyright (c) {{now.year}}, {{author.name}} <{{author.email}}>
+# Copyright (c) {{now.year}}, {{author_name}} <{{author_email}}>
 #
 #Permission is hereby granted, free of charge, to any person obtaining a copy
 #of this software and associated documentation files (the "Software"), to deal
@@ -38,14 +36,14 @@ References:
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #THE SOFTWARE.
 
-__author__ = "{{author.name}} <{{author.email}}>"
-__copyright__ = "Copyright {{now.year}}, {{project.codename}}"
-__credits__ = [ "{{author.name}}" ]
+__author__ = "{{author_name}}"
+__email__ = "<{{author_email}}>"
+__copyright__ = "Copyright {{now.year}}, {{project_codename}}"
 __license__ = "MIT"
+__maintainer__ = "{{author_name}}"
 __version__ = "0.1"
-__maintainer__ = "{{author.name}}"
-__email__ = "<{{author.email}}>"
 __status__ = "Prototype"
+__credits__ = ["{{author_name}}"]
 
 ########################################################################
 
@@ -82,7 +80,7 @@ def dev_mode():
 #-------------------------------------------------------------------------------
 
 def main():
-    '''Main entry of {{project.codename}}
+    '''Main entry of {{project_codename}}
     '''
 
     # It's easier to create a user-friendly console application by using argparse

@@ -1,0 +1,13 @@
+{
+    "name"     : "rep"
+    ,"template": "report.txt" 
+    ,"ext"     : "txt"
+    ,"default_name" : "report{% if report_code %}_{{report_code}}{% endif %}.txt"
+    ,"fields"  : [
+            { "name" : "author_name" , "required" : "yes" }
+           ,{ "name" : "author_email" , "required" : "yes" }
+           ,{ "name" : "report_title" , "required" : "yes" }
+           ,{ "name" : "report_code", "required" : "yes" }
+           ,{ "name" : "report_body" , "required" : "no"  }
+    ]
+}
