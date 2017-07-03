@@ -1,0 +1,11 @@
+{
+	"name"     : "init"
+        ,"desc"    : "Python 3 package __init__ file"
+	,"template": "init.py" 
+	,"ext"     : "py"
+	,"default_name" : "__init__.py"
+	,"fields"  : [
+                { "name" : "desc"            , "required" : "no"  }
+	       ,{ "name" : "project_codename", "required" : "yes" }
+	]
+}
