@@ -63,7 +63,8 @@ import argparse
 # CONFIGURATION
 #-------------------------------------------------------------------------------
 
-TEMPLATE_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+MY_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_FOLDER = os.path.join(MY_DIR, 'templates')
 TAORA_CFG_FILE = os.path.abspath(os.path.expanduser('~/.taora'))
 
 
@@ -129,6 +130,8 @@ class GlobalConfig:
             self.load(TAORA_CFG_FILE)
         elif os.path.isfile('./.taora'):
             self.load('./.taora')
+        elif os.path.isfile(os.path.join(MY_DIR, '../.taora')):
+            self.load(os.path.join(MY_DIR, '../.taora'))
         else:
             logging.warning("There is no configuration file (either ~/.taora or ./.taora)")
             self.contents = {}
