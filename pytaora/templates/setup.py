@@ -43,7 +43,7 @@ __license__ = "MIT"
 __maintainer__ = "{{author_name}}"
 __version__ = "0.1"
 __status__ = "Prototype"
-__credits__ = ["{{author_name}}"]
+__credits__ = []
 
 ########################################################################
 
@@ -75,7 +75,7 @@ long_description = read('README.md', 'CHANGES.md')
 setup(
     name='{{project_codename}}',
     version={{project_codename}}.__version__,
-    url='{% if project.url %}{{project.url}}{% elif author.github %}{{author.github}}{{project_codename}}{% endif %}',
+    url='{% if project_url %}{{project_url}}{% elif author_github %}{{author_github}}{{project_codename}}{% endif %}',
     license='MIT License',
     author='{{author_name}}',
     tests_require=[],

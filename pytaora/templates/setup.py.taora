@@ -2,6 +2,7 @@
 	"name"     : "spy"
 	,"template": "setup.py" 
 	,"ext"     : "py"
+        ,"desc"    : "Python 3 setup file"
 	,"fields"  : [
 		 { "name" : "desc"            , "required" : "yes" }
 	       ,{ "name" : "author_name"     , "required" : "yes" }

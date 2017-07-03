@@ -1,5 +1,6 @@
 {
 	"name"     : "py3"
+        ,"desc"    : "Python 3 console application"
 	,"template": "template.py" 
 	,"ext"     : "py"
 	,"fields"  : [

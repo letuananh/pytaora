@@ -1,11 +1,10 @@
 from .pytaora import TemplateConfig
 from .pytaora import GlobalConfig
-from .pytaora import Template
-from .pytaora import search_template
+from .pytaora import TemplateManager, Template
 from .pytaora import gen_code
 
 __all__ = ["TemplateConfig",
            "GlobalConfig",
+           "TemplateManager",
            "Template",
-           "search_template",
            "gen_code"]

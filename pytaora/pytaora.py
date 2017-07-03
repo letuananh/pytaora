@@ -40,7 +40,7 @@ References:
 
 __author__ = "Le Tuan Anh <tuananh.ke@gmail.com>"
 __copyright__ = "Copyright 2016, pytaora"
-__credits__ = [ "Le Tuan Anh" ]
+__credits__ = []
 __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Le Tuan Anh"
@@ -63,9 +63,9 @@ import argparse
 # CONFIGURATION
 #-------------------------------------------------------------------------------
 
-
 TEMPLATE_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-TAORA_CFG_FILE  = os.path.abspath(os.path.expanduser('~/.taora'))
+TAORA_CFG_FILE = os.path.abspath(os.path.expanduser('~/.taora'))
+
 
 #-------------------------------------------------------------------------------
 # CLASSES
@@ -93,9 +93,11 @@ class TemplateConfig:
         if 'template' not in cfg or 'ext' not in cfg:
             raise Exception('Invalid template config file (Template file or extension not found)')
         else:
+            self.__cfg = cfg
             self.template = cfg['template']
-            self.ext      = cfg['ext']
-            self.name     = cfg['name']
+            self.ext = cfg['ext']
+            self.name = cfg['name']
+            self.description = cfg['desc'] if 'desc' in cfg else ''
             self.default_name = cfg['default_name'] if 'default_name' in cfg else None
 
     def __len__(self):
@@ -128,16 +130,22 @@ class GlobalConfig:
         elif os.path.isfile('./.taora'):
             self.load('./.taora')
         else:
+            logging.warning("There is no configuration file (either ~/.taora or ./.taora)")
             self.contents = {}
 
     def load(self, fname):
+        logging.info("Loading configuration from {}".format(fname))
         with open(fname, 'r') as cfgfile:
             self.contents = json.loads(cfgfile.read())
         return self.contents
 
+    __singleton = None
+
     @staticmethod
     def read():
-        return GlobalConfig().contents
+        if GlobalConfig.__singleton is None:
+            GlobalConfig.__singleton = GlobalConfig()
+        return GlobalConfig.__singleton.contents
 
 
 class Template:
@@ -146,13 +154,14 @@ class Template:
         # Read template config
         self.config = TemplateConfig.parse_file(os.path.join(template_folder, template_config_file))
         # Jinja template loader
-        self.templateLoader = jinja2.FileSystemLoader( searchpath=template_folder )
-        self.templateEnv    = jinja2.Environment( loader=self.templateLoader )
-        self.template       = self.templateEnv.get_template(self.config.template)
-        self.ext            = self.config.ext
+        self.templateLoader = jinja2.FileSystemLoader(searchpath=template_folder)
+        self.templateEnv = jinja2.Environment(loader=self.templateLoader)
+        self.template = self.templateEnv.get_template(self.config.template)
+        self.ext = self.config.ext
+        self.description = self.config.description
         self.default_name = self.config.default_name
         self.contents = defaultdict(dict)
-        self.contents.update({ 'now' : datetime.datetime.now() })
+        self.contents.update({'now': datetime.datetime.now()})
 
         # Prefill stuff from Global config
         prefilled = GlobalConfig.read()
@@ -160,13 +169,13 @@ class Template:
             logging.info("Prefilled value(s) from .taora file: %s" % json.dumps(prefilled))
             self.contents.update(prefilled)
             logging.info("My values: %s" % self.contents)
-    
+
     def get_default_name(self):
         if self.default_name:
             return self.templateEnv.from_string(self.default_name).render(self.contents)
         elif self.contents['project.codename']:
-            return self.contents['default_name'] + '.' + template.ext
-    
+            return self.contents['default_name'] + '.' + self.ext
+
     def fillin(self):
         for req in self.config.requirements:
             current_value = self[req]
@@ -195,7 +204,7 @@ class Template:
         return True
 
     def __getitem__(self, requirement):
-        field = requirement if isinstance(requirement,str) else requirement.field
+        field = requirement if isinstance(requirement, str) else requirement.field
         path = list(reversed(field.split('.')))
         logging.debug("path: %s" % (path,))
         level = self.contents
@@ -219,14 +228,14 @@ class Template:
             step = path.pop()
             level = self.contents[step]
         level[path.pop()] = value
-        
+
     def confirm(self, msg, default_yes=False):
         answer = input(msg)
         return answer.lower() in ['y', 'yes'] or (default_yes and answer == '')
 
     def render(self):
         return self.template.render(self.contents)
-    
+
     def save(self, filename):
         filename = os.path.abspath(filename)
         if os.path.isfile(filename):
@@ -237,37 +246,41 @@ class Template:
             outfile.write(self.render())
             print("Code has been generated to %s" % (filename,))
 
+
+class TemplateManager(object):
+
+    __singleton = None
+
+    def __init__(self, template_folder=TEMPLATE_FOLDER):
+        self.template_folder = template_folder
+        self.templates = {}
+
+    def load(self):
+        ''' Load all available templates '''
+        for filename in os.listdir(self.template_folder):
+            if filename.endswith('.taora'):
+                logging.debug('Loading template: %s' % filename)
+                template_obj = Template(filename)
+                self.templates[template_obj.config.name] = template_obj
+        return self
+
+    def search(self, template_name):
+        return self.templates[template_name] if template_name in self.templates else None
+
+    @staticmethod
+    def all(template_folder=TEMPLATE_FOLDER):
+        if TemplateManager.__singleton is None:
+            TemplateManager.__singleton = TemplateManager(template_folder)
+            TemplateManager.__singleton.load()
+        return TemplateManager.__singleton.load()
+
+
 #-------------------------------------------------------------------------------
 # FUNCTIONS
 #-------------------------------------------------------------------------------
 
-
-def dev_mode(outpath=None,terms=None):
-    print("Working ...")
-    pass
-
-
-template_cache = None
-
-
-def search_template(template_name, template_folder=TEMPLATE_FOLDER):
-    global template_cache
-    if not template_cache:
-        template_cache = {}
-        # load all templates
-        for filename in os.listdir(template_folder):
-            if filename.endswith('.taora'):
-                logging.info('Loading template: %s' % filename)
-                template_obj = Template(filename)
-                template_cache[template_obj.config.name] = template_obj
-    if template_name in template_cache:
-        return template_cache[template_name]
-    else:
-        return None
-
-        
 def gen_code(template_name, outpath=None, terms=None, to_stdout=False):
-    template = search_template(template_name)
+    template = TemplateManager.all().search(template_name)
     if not template:
         print("Template `%s` not found" % (template_name,))
         return None
@@ -294,6 +307,15 @@ def gen_code(template_name, outpath=None, terms=None, to_stdout=False):
     else:
         print("Code generation cancelled")
 
+
+def list_templates():
+    print("")
+    print("Available templates:")
+    templates = TemplateManager.all().templates
+    for t in templates:
+        print("{k}: {d}".format(k=t, d=templates[t].description))
+
+
 #-------------------------------------------------------------------------------
 # MAIN
 #-------------------------------------------------------------------------------
@@ -301,19 +323,17 @@ def gen_code(template_name, outpath=None, terms=None, to_stdout=False):
 def main():
     '''Main entry of pyTaora
     '''
-
     parser = argparse.ArgumentParser(description="pyTaora - A code generator")
-    
     parser.add_argument('template', help='Name of the code template to use')
 
     # Positional argument(s)
     parser.add_argument('-d', '--dev', help='Run developing feature', action="store_true")
-    
+
     # parser.add_argument('-i', '--input', help='Template to be used')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-o', '--output', help='Path to output file')
     group.add_argument('--stdout', help='Write generated content to standard output stream', action='store_true')
-    parser.add_argument('-t', '--terms', nargs = '*', dest = 'terms', help = 'Config')
+    parser.add_argument('-t', '--terms', nargs='*', dest='terms', help='Config')
     # Optional argument(s)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--verbose", action="store_true")
@@ -323,9 +343,10 @@ def main():
     if len(sys.argv) == 1:
         # User didn't pass any value in, show help
         parser.print_help()
+        list_templates()
     else:
-        # Parse input arguments
         args = parser.parse_args()
+        # config logging
         if args.debug:
             logging.basicConfig(level=logging.DEBUG)
         elif args.verbose:
@@ -334,14 +355,10 @@ def main():
             logging.disabled = True
         else:
             logging.basicConfig(level=logging.CRITICAL)
-
-
-        # Now do something ...
-        if args.dev:
-            dev_mode(args.output, terms=args.terms)
-        else:
-            gen_code(args.template, args.output, terms=args.terms, to_stdout=args.stdout)
+        # perform task
+        gen_code(args.template, args.output, terms=args.terms, to_stdout=args.stdout)
     pass
+
 
 if __name__ == "__main__":
     main()

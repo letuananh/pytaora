@@ -40,7 +40,7 @@ References:
 
 __author__ = "Le Tuan Anh <tuananh.ke@gmail.com>"
 __copyright__ = "Copyright 2017, pytaora"
-__credits__ = [ "Le Tuan Anh" ]
+__credits__ = []
 __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Le Tuan Anh"
@@ -60,12 +60,13 @@ from pytaora import GlobalConfig
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE_PATH = os.path.join(TEST_DIR, 'test_data', '.taora')
 
+
 #-----------------------------------------------------------------------
 # Test configuration manager
 #-----------------------------------------------------------------------
 
 class TestConfiguration(unittest.TestCase):
-    
+
     def test_read_configuration(self):
         cfg = GlobalConfig()
         cfg.load(CONFIG_FILE_PATH)
@@ -73,6 +74,7 @@ class TestConfiguration(unittest.TestCase):
         self.assertEqual("Le Tuan Anh", cfg.contents['author.name'])
         self.assertEqual("tuananh.ke@gmail.com", cfg.contents['author.email'])
         self.assertEqual("https://github.com/letuananh/", cfg.contents['project.url'])
+
 
 if __name__ == "__main__":
     unittest.main()

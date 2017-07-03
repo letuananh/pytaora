@@ -43,7 +43,7 @@ __license__ = "MIT"
 __maintainer__ = "{{author_name}}"
 __version__ = "0.1"
 __status__ = "Prototype"
-__credits__ = ["{{author_name}}"]
+__credits__ = []
 
 ########################################################################
 
@@ -53,6 +53,7 @@ import logging
 import argparse
 from collections import defaultdict as dd
 from collections import namedtuple
+
 
 #-------------------------------------------------------------------------------
 # CONFIGURATION
@@ -66,6 +67,7 @@ DATA_FOLDER = os.path.abspath(os.path.expanduser('./data'))
 
 Person = namedtuple('Person', ['name', 'age'])
 
+
 #-------------------------------------------------------------------------------
 # FUNCTIONS
 #-------------------------------------------------------------------------------
@@ -74,6 +76,7 @@ def dev_mode():
     logging.info("I'm working on this ...")
     logging.debug("A debug message")
     logging.error("When I see an error ...")
+
 
 #-------------------------------------------------------------------------------
 # MAIN
@@ -86,7 +89,7 @@ def main():
     # It's easier to create a user-friendly console application by using argparse
     # See reference at the top of this script
     parser = argparse.ArgumentParser(description="{{desc}}")
-    
+
     # Positional argument(s)
     parser.add_argument('-d', '--dev', help='Quick method for developer.', action='store_true')
 
@@ -115,6 +118,7 @@ def main():
         else:
             parser.print_help()
     pass
+
 
 if __name__ == "__main__":
     main()

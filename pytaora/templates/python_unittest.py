@@ -45,7 +45,7 @@ __license__ = "MIT"
 __maintainer__ = "{{author_name}}"
 __version__ = "0.1"
 __status__ = "Prototype"
-__credits__ = ["{{author_name}}"]
+__credits__ = []
 
 ########################################################################
 
@@ -64,14 +64,14 @@ TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestMainApp(unittest.TestCase):
-    
+
     def test_{{project_codename}}(self):
         self.assertEqual(self, "foo")
+
 
 #-------------------------------------------------------------------------------
 # MAIN
 #-------------------------------------------------------------------------------
-
 
 if __name__ == "__main__":
     unittest.main()

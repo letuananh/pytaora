@@ -45,13 +45,14 @@ __license__ = "MIT"
 __maintainer__ = "Le Tuan Anh"
 __version__ = "0.1"
 __status__ = "Prototype"
-__credits__ = ["Le Tuan Anh"]
+__credits__ = []
 
 ########################################################################
 
 import os
+import datetime
 import unittest
-from pytaora import Template
+from pytaora import Template, TemplateManager
 
 #-------------------------------------------------------------------------------
 # CONFIGURATION
@@ -59,13 +60,14 @@ from pytaora import Template
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_TEMPLATE_DIR = os.path.join(TEST_DIR, 'test_data')
-#-------------------------------------------------------------------------------
-# DATA STRUCTURES
-#-------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------
+# TEST CASES
+#-------------------------------------------------------------------------------
 
 class TestTemplate(unittest.TestCase):
-    
+
     def test_load_template(self):
         tmp = Template('report.txt.taora', TEST_TEMPLATE_DIR)
         # the default name should be report.txt
@@ -78,19 +80,38 @@ class TestTemplate(unittest.TestCase):
         # now file name should be report_UR-001.txt
         self.assertEqual('report_UR-001.txt', tmp.get_default_name())
         # print("\nReport will be saved to: {filename}\n---------\n{content}\n".format(filename=tmp.get_default_name(), content=tmp.render()))
+        now = datetime.datetime.now()
         expected_report = '''.:: Uber report ::.
 --
 Report code: UR-001
 Prepared by: Le Tuan Anh <tuananh.ke@gmail.com>
-Created on : 5 1 2017
+Created on : {d} {m} {y}
 ------------------------------------------------------------------------
-I have nothing to report today'''
+I have nothing to report today'''.format(d=now.day, m=now.month, y=now.year)
         self.assertEqual(tmp.render(), expected_report)
+
+    def test_vanilla_template(self):
+        mgr = TemplateManager.all()
+        templates = mgr.templates
+        self.assertTrue("spy" in templates)
+        self.assertTrue("put" in templates)
+        self.assertTrue("py3" in templates)
+        self.assertEqual(templates['spy'].description, "Python 3 setup file")
+        self.assertEqual(templates['put'].description, "Python 3 unittest")
+        self.assertEqual(templates['py3'].description, "Python 3 console application")
+        # for t in mgr.templates:
+        #     print("{k}: {d}".format(k=t, d=mgr.templates[t].config.description))
+        templates['put']['project_codename'] = 'uberapp'
+        self.assertIsNotNone(templates['put'].render())
+        templates['spy']['project_codename'] = 'uberapp'
+        self.assertIsNotNone(templates['spy'].render())
+        templates['py3']['project_codename'] = 'uberapp'
+        self.assertIsNotNone(templates['py3'].render())
+
 
 #-------------------------------------------------------------------------------
 # MAIN
 #-------------------------------------------------------------------------------
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,6 @@
 {
     "name"     : "rep"
+    ,"desc"    : "A simple text report"
     ,"template": "report.txt" 
     ,"ext"     : "txt"
     ,"default_name" : "report{% if report_code %}_{{report_code}}{% endif %}.txt"

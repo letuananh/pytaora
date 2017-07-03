@@ -1,8 +1,9 @@
 {
 	"name"     : "put"
+        ,"desc"    : "Python 3 unittest"
 	,"template": "python_unittest.py" 
 	,"ext"     : "py"
-	,"default_name" : "test_{{project.codename}}.py"
+	,"default_name" : "test_{{project_codename}}.py"
 	,"fields"  : [
 	       { "name" : "author_name"     , "required" : "yes" }
 	       ,{ "name" : "author_email"    , "required" : "yes" }
