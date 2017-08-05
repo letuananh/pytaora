@@ -1,11 +1,11 @@
 {
-	"name"     : "{{template_id}}"
-        ,"desc"    : "{{desc}}"
-	,"template": "{{template_filename}}" 
-	,"ext"     : "taora"
-	,"default_name" : "{{template_id}}.taora"
-	,"fields"  : [
-                { "name" : "desc"            , "required" : "no"  }
-	       ,{ "name" : "project_codename", "required" : "yes" }
-	]
+    "name"     : "{{template_id}}"
+    ,"desc"    : "{{desc}}"
+    ,"template": "{{template_filename}}" 
+    ,"ext"     : "taora"
+    ,"default_name" : "{{template_id}}.taora"
+    ,"fields"  : [
+        { "name" : "project_codename", "required" : "yes" }
+        ,{ "name": "desc"            , "required" : "no"  }
+    ]
 }

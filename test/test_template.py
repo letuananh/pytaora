@@ -99,6 +99,10 @@ I have nothing to report today'''.format(d=now.day, m=now.month, y=now.year)
         self.assertEqual(templates['spy'].description, "Python 3 setup file")
         self.assertEqual(templates['put'].description, "Python 3 unittest")
         self.assertEqual(templates['py3'].description, "Python 3 console application")
+        self.assertEqual(templates['pyts'].description, "Test script for python project")
+        self.assertEqual(templates['taora'].description, "Taora template configuration file")
+        self.assertEqual(templates['init'].description, "Python 3 package __init__ file")
+        self.assertEqual(templates['pycfg'].description, "Configuration script for Python project")
         # for t in mgr.templates:
         #     print("{k}: {d}".format(k=t, d=mgr.templates[t].config.description))
         templates['put']['project_codename'] = 'uberapp'
@@ -107,6 +111,14 @@ I have nothing to report today'''.format(d=now.day, m=now.month, y=now.year)
         self.assertIsNotNone(templates['spy'].render())
         templates['py3']['project_codename'] = 'uberapp'
         self.assertIsNotNone(templates['py3'].render())
+        templates['pyts']['project_codename'] = 'uberapp'
+        self.assertIsNotNone(templates['pyts'].render())
+        templates['taora']['project_codename'] = 'uberapp'
+        self.assertIsNotNone(templates['taora'].render())
+        templates['init']['project_codename'] = 'uberapp'
+        self.assertIsNotNone(templates['init'].render())
+        templates['pycfg']['project_codename'] = 'uberapp'
+        self.assertIsNotNone(templates['pycfg'].render())
 
 
 #-------------------------------------------------------------------------------

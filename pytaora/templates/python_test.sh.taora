@@ -1,0 +1,11 @@
+{
+    "name"     : "pyts"
+    ,"desc"    : "Test script for python project"
+    ,"template": "python_test.sh" 
+    ,"ext"     : "taora"
+    ,"default_name" : "test.sh"
+    ,"fields"  : [
+           { "name" : "desc"             , "required" : "no" }
+           ,{ "name" : "project_codename", "required" : "no" }
+    ]
+}

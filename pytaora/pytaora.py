@@ -63,6 +63,8 @@ import argparse
 # CONFIGURATION
 #-------------------------------------------------------------------------------
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 MY_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_FOLDER = os.path.join(MY_DIR, 'templates')
 TAORA_CFG_FILE = os.path.abspath(os.path.expanduser('~/.taora'))
@@ -118,8 +120,12 @@ class TemplateConfig:
 
     @staticmethod
     def parse_file(file_name):
-        with open(file_name, 'r') as infile:
-            return TemplateConfig.parse(infile.read())
+        try:
+            with open(file_name, 'r') as infile:
+                return TemplateConfig.parse(infile.read())
+        except Exception as e:
+            logger.exception("Cannot load template from file {}".format(file_name))
+            raise
 
 
 class GlobalConfig:
@@ -282,7 +288,17 @@ class TemplateManager(object):
 # FUNCTIONS
 #-------------------------------------------------------------------------------
 
-def gen_code(template_name, outpath=None, terms=None, to_stdout=False):
+def mkdir(args):
+    if not os.path.exists(args.dirname):
+        os.makedirs(args.dirname)
+
+
+def gen_code(args):
+    template_name = args.template
+    outpath = args.outpath
+    terms = args.terms
+    to_stdout = args.stdout
+
     template = TemplateManager.all().search(template_name)
     if not template:
         print("Template `%s` not found" % (template_name,))
@@ -301,6 +317,11 @@ def gen_code(template_name, outpath=None, terms=None, to_stdout=False):
             print("\n\n")
             print(template.render())
         elif outpath:
+            if os.path.isdir(outpath):
+                # if there is a default name, use that
+                if template.get_default_name():
+                    outpath = os.path.join(outpath, template.get_default_name())
+            # write file
             template.save(outpath)
         elif template.get_default_name():
             template.save(template.get_default_name())
@@ -311,9 +332,9 @@ def gen_code(template_name, outpath=None, terms=None, to_stdout=False):
         print("Code generation cancelled")
 
 
-def list_templates():
-    print("")
+def list_templates(args=None):
     print("Available templates:")
+    print("-" * 40)
     templates = TemplateManager.all().templates
     for t in templates:
         print("{k}: {d}".format(k=t, d=templates[t].description))
@@ -327,25 +348,40 @@ def main():
     '''Main entry of pyTaora
     '''
     parser = argparse.ArgumentParser(description="pyTaora - A code generator")
-    parser.add_argument('template', help='Name of the code template to use')
 
     # Positional argument(s)
-    parser.add_argument('-d', '--dev', help='Run developing feature', action="store_true")
+    task_parsers = parser.add_subparsers(help='taora type (file/dir)')
 
-    # parser.add_argument('-i', '--input', help='Template to be used')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-o', '--output', help='Path to output file')
-    group.add_argument('--stdout', help='Write generated content to standard output stream', action='store_true')
+    # dir creation task
+    dir_task = task_parsers.add_parser('dir')
+    dir_task.add_argument('dirname')
+    dir_task.set_defaults(func=mkdir)
+
+    # file creation task
+    file_task = task_parsers.add_parser('file')
+    file_task.add_argument('template', help='Name of the code template to use')
+    file_task.set_defaults(func=gen_code)
+
+    # list templates task
+    list_task = task_parsers.add_parser('list')
+    list_task.set_defaults(func=list_templates)
+
+    # code gen configuration
     parser.add_argument('-t', '--terms', nargs='*', dest='terms', help='Config')
-    # Optional argument(s)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-o', '--outpath', help='Path to output file or directory (default_name will be used)')
+    group.add_argument('--stdout', help='Write generated content to standard output stream', action='store_true')
+    # logging/verbose, etc.
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--verbose", action="store_true")
     group.add_argument("-q", "--quiet", action="store_true")
     group.add_argument('--debug', help='Activate debug mode', action="store_true")
+
     # Main script
     if len(sys.argv) == 1:
         # User didn't pass any value in, show help
         parser.print_help()
+        print("")
         list_templates()
     else:
         args = parser.parse_args()
@@ -359,7 +395,7 @@ def main():
         else:
             logging.basicConfig(level=logging.CRITICAL)
         # perform task
-        gen_code(args.template, args.output, terms=args.terms, to_stdout=args.stdout)
+        args.func(args)
     pass
 
 

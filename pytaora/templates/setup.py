@@ -56,10 +56,11 @@ import sys
 
 from {{project_codename}} import {{project_codename}}
 
+
 ########################################################################
 
-
 here = os.path.abspath(os.path.dirname(__file__))
+
 
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
@@ -71,6 +72,7 @@ def read(*filenames, **kwargs):
     return sep.join(buf)
 
 long_description = read('README.md', 'CHANGES.md')
+
 
 setup(
     name='{{project_codename}}',

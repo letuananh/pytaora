@@ -4,4 +4,4 @@
 
 from .{{project_codename}} import *
 
-__all__ = ["{{project_codename}}"]
+# __all__ = ["{{project_codename}}"]

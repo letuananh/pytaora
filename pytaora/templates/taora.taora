@@ -1,12 +1,12 @@
 {
-	"name"     : "tcfg"
-        ,"desc"    : "Taora template configuration file"
-	,"template": "taora.txt" 
-	,"ext"     : "taora"
-	,"default_name" : "{{template_id}}.taora"
-	,"fields"  : [
-                { "name" : "template_id"      , "required" : "yes"}
-	       ,{ "name" : "desc"             , "required" : "no" }
-               ,{ "name" : "template_filename", "required" : "no" }  
-	]
+    "name"     : "taora"
+    ,"desc"    : "Taora template configuration file"
+    ,"template": "taora.txt"
+    ,"ext"     : "taora"
+    ,"default_name": "{{template_id}}.taora"
+    ,"fields"  : [
+           { "name" : "template_filename", "required" : "yes" }
+           ,{ "name": "template_id"      , "required" : "yes"}
+           ,{ "name": "desc"             , "required" : "no" }
+    ]
 }

@@ -1,13 +1,14 @@
 {
-	"name"     : "spy"
-	,"template": "setup.py" 
-	,"ext"     : "py"
-        ,"desc"    : "Python 3 setup file"
-	,"fields"  : [
-		 { "name" : "desc"            , "required" : "yes" }
-	       ,{ "name" : "author_name"     , "required" : "yes" }
-	       ,{ "name" : "author_email"    , "required" : "yes" }
-	       ,{ "name" : "project_url"     , "required" : "no"  }
-	       ,{ "name" : "project_codename", "required" : "yes" }
-	]
+    "name"     : "spy"
+    ,"template": "setup.py" 
+    ,"ext"     : "py"
+    ,"desc"    : "Python 3 setup file"
+    ,"default_name" : "setup.py"
+    ,"fields"  : [
+         { "name" : "desc"            , "required" : "yes" }
+           ,{ "name" : "author_name"     , "required" : "yes" }
+           ,{ "name" : "author_email"    , "required" : "yes" }
+           ,{ "name" : "project_url"     , "required" : "no"  }
+           ,{ "name" : "project_codename", "required" : "yes" }
+    ]
 }

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Test script for {{project_codename}}
+Test script for {% if module_to_test %}{{module_to_test}}{% else %}{{project_codename}}{% endif %}
 Latest version can be found at {% if project_url %}{{project_url}}{% elif author_github %}{{author_github}}{{project_codename}}{% endif %}
 
 References:
@@ -57,11 +57,12 @@ import unittest
 #-------------------------------------------------------------------------------
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+TEST_DATA = os.path.join(TEST_DIR, 'data')
+
 
 #-------------------------------------------------------------------------------
 # DATA STRUCTURES
 #-------------------------------------------------------------------------------
-
 
 class TestMainApp(unittest.TestCase):
 

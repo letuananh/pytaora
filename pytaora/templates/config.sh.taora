@@ -1,0 +1,10 @@
+{
+    "name"     : "pycfg"
+        ,"desc"    : "Configuration script for Python project"
+    ,"template": "config.sh" 
+    ,"ext"     : "sh"
+    ,"default_name" : "config.sh"
+    ,"fields"  : [
+        { "name" : "submodule" , "required" : "no" }
+    ]
+}

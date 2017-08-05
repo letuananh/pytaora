@@ -1,13 +1,14 @@
 {
-	"name"     : "put"
+    "name"     : "put"
         ,"desc"    : "Python 3 unittest"
-	,"template": "python_unittest.py" 
-	,"ext"     : "py"
-	,"default_name" : "test_{{project_codename}}.py"
-	,"fields"  : [
-	       { "name" : "author_name"     , "required" : "yes" }
-	       ,{ "name" : "author_email"    , "required" : "yes" }
-	       ,{ "name" : "project_url"     , "required" : "no"  }
-	       ,{ "name" : "project_codename", "required" : "yes" }
-	]
+    ,"template": "python_unittest.py" 
+    ,"ext"     : "py"
+    ,"default_name" : "test_{% if module_to_test %}{{module_to_test}}{% else %}{{project_codename}}{% endif %}.py"
+    ,"fields"  : [
+           { "name" : "author_name"      , "required" : "yes" }
+           ,{ "name" : "author_email"    , "required" : "yes" }
+           ,{ "name" : "module_to_test"  , "required" : "no" }
+           ,{ "name" : "project_codename", "required" : "no" }
+           ,{ "name" : "project_url"     , "required" : "no"  }
+    ]
 }
