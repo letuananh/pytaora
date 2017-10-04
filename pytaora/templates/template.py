@@ -18,23 +18,23 @@ References:
 
 # Copyright (c) {{now.year}}, {{author_name}} <{{author_email}}>
 #
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files (the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#The above copyright notice and this permission notice shall be included in
-#all copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 __author__ = "{{author_name}}"
 __email__ = "<{{author_email}}>"
@@ -47,7 +47,6 @@ __credits__ = []
 
 ########################################################################
 
-import sys
 import os
 import logging
 import argparse
@@ -55,32 +54,42 @@ from collections import defaultdict as dd
 from collections import namedtuple
 
 
-#-------------------------------------------------------------------------------
-# CONFIGURATION
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+# Configuration
+# -------------------------------------------------------------------------------
 
+logger = logging.getLogger(__name__)
 DATA_FOLDER = os.path.abspath(os.path.expanduser('./data'))
 
-#-------------------------------------------------------------------------------
-# DATA STRUCTURES
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+# Data structures
+# -------------------------------------------------------------------------------
 
 Person = namedtuple('Person', ['name', 'age'])
+people = dd(list)
 
 
-#-------------------------------------------------------------------------------
-# FUNCTIONS
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+# Application logic
+# -------------------------------------------------------------------------------
 
-def dev_mode():
+def uber_action(args):
     logging.info("I'm working on this ...")
     logging.debug("A debug message")
     logging.error("When I see an error ...")
 
 
-#-------------------------------------------------------------------------------
-# MAIN
-#-------------------------------------------------------------------------------
+def config_logging(args):
+    ''' Override root logger's level '''
+    if args.quiet:
+        logging.getLogger().setLevel(logging.CRITICAL)
+    elif args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+
+# -------------------------------------------------------------------------------
+# Main method
+# -------------------------------------------------------------------------------
 
 def main():
     '''Main entry of {{project_codename}}
@@ -88,35 +97,26 @@ def main():
 
     # It's easier to create a user-friendly console application by using argparse
     # See reference at the top of this script
-    parser = argparse.ArgumentParser(description="{{desc}}")
-
-    # Positional argument(s)
-    parser.add_argument('-d', '--dev', help='Quick method for developer.', action='store_true')
+    parser = argparse.ArgumentParser(description="{{desc}}", add_help=False)
+    parser.set_defaults(func=None)
 
     # Optional argument(s)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--verbose", action="store_true")
     group.add_argument("-q", "--quiet", action="store_true")
 
+    tasks = parser.add_subparsers(help="Task to be done")
+
+    uber_task = tasks.add_parser('uber', parents=[parser], help='To perform an uber action')
+    uber_task.set_defaults(func=uber_action)
+
     # Main script
-    if len(sys.argv) == 1:
-        # User didn't pass any value in, show help
-        parser.print_help()
+    args = parser.parse_args()
+    config_logging(args)
+    if args.func is not None:
+        args.func(args)
     else:
-        # Parse input arguments
-        args = parser.parse_args()
-        # Now do something ...
-        if args.quiet:
-            logging.basicConfig(level=logging.CRITICAL)
-            logging.disabled = True
-        elif args.verbose:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.INFO)
-        if args.dev:
-            dev_mode()
-        else:
-            parser.print_help()
+        parser.print_help()
     pass
 
 
